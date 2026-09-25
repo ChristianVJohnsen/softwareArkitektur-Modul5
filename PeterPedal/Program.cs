@@ -1,14 +1,17 @@
 using System;
 using System.Collections.Generic;
-
-// Customer contact details for a repair case.
+/// <summary>
+/// Customer contact details for a repair case.
+/// </summary>
 class RepairCaseData
 {
     public string FirstName;
     public string LastName;
     public string Phone;
 }
-
+/// <summary>
+/// Repair case for a bike repair, including customer info, findings, parts and status.
+/// </summary>
 class RepairCase
 {
     public string FrameNumber;
@@ -30,6 +33,11 @@ class SparePartCatalog
         { "Brake pads", 120m }
     };
 
+    /// <summary>
+    /// Returns the price of a spare part from the catalog.
+    /// </summary>
+    /// <param name="partName">The name of the spare part.</param>
+    /// <returns>The price in DKK, or 0 if the part is not found.</returns>
     public decimal GetPrice(string partName)
     {
         if (prices.ContainsKey(partName))
@@ -42,25 +50,46 @@ class SparePartCatalog
 
 class Notifier
 {
+    /// <summary>
+    /// Sends an SMS message to a customer phone number.
+    /// </summary>
+    /// <param name="phone">The customer's phone number.</param>
+    /// <param name="message">The text to send.</param>
     public void SendSms(string phone, String message)
     {
         Console.WriteLine("SMS to " + phone + ": " + message);
     }
 
+    /// <summary>
+    /// Leaves a voicemail message for the customer.
+    /// </summary>
+    /// <param name="phone">The customer's phone number.</param>
     public void LeaveVoicemail(string phone)
     {
         Console.WriteLine($"Voicemail left for {phone}: please call us back regarding your bike.");
     }
 }
 
+/**
+ * Handles repair cases for Peter Pedal.
+ * This service creates cases, registers findings, estimates prices and completes repairs.
+ */
 class repairService
 {
     private List<RepairCase> cases = new List<RepairCase>();
     private SparePartCatalog catalog = new SparePartCatalog();
     private Notifier notifier = new Notifier();
 
-    private const decimal HOURLY_RATE = 450;
+    public const decimal HOURLY_RATE = 450;
 
+    /// <summary>
+    /// Creates a new repair case for a customer and stores it in memory.
+    /// </summary>
+    /// <param name="firstName">Customer's first name.</param>
+    /// <param name="lastName">Customer's last name.</param>
+    /// <param name="phone">Customer phone number.</param>
+    /// <param name="FrameNumber">Bike frame number.</param>
+    /// <param name="problem">Description of the bike problem.</param>
     public void CreateCase(string firstName, string lastName, string phone, string FrameNumber, string problem)
     {
         RepairCaseData customer = new RepairCaseData();
@@ -80,6 +109,11 @@ class repairService
         Console.WriteLine($"Problem: {problem}");
     }
 
+    /// <summary>
+    /// Registers one or more findings for an existing repair case.
+    /// </summary>
+    /// <param name="frameNumber">The frame number of the bike.</param>
+    /// <param name="findings">The list of findings to add to the case.</param>
     public void registerFindings(string frameNumber, List<string> findings)
     {
         RepairCase c = FindCase(frameNumber);
@@ -102,6 +136,10 @@ class repairService
         }
     }
 
+    /// <summary>
+    /// Finds spare parts needed for a case based on its registered findings.
+    /// </summary>
+    /// <param name="frameNumber">The frame number of the bike to inspect.</param>
     public void LookUpParts(string frameNumber)
     {
         RepairCase c = FindCase(frameNumber);
@@ -130,32 +168,45 @@ class repairService
         Console.WriteLine($"Found {numberOfParts} part(s) for case {frameNumber}.");
     }
 
-    // Calculates the price of a gear cable including markup.
-    private decimal CalculatePriceForGearCable()
+    /// <summary>
+    /// Calculates the final price for a gear cable including markup.
+    /// </summary>
+    /// <returns>The calculated price for the gear cable.</returns>
+    public decimal CalculatePriceForGearCable()
     {
         decimal price = 150m;
         decimal markup = price * 0.1m;
         return price + markup;
     }
 
-    // Calculates the price of a sprocket including markup.
-    private decimal CalculatePriceForSprocket()
+    /// <summary>
+    /// Calculates the final price for a sprocket including markup.
+    /// </summary>
+    /// <returns>The calculated price for the sprocket.</returns>
+    public decimal CalculatePriceForSprocket()
     {
         decimal price = 300m;
         decimal markup = price * 0.1m;
         return price + markup;
     }
 
-    // Calculates the price of brake pads including markup.
-    private decimal CalculatePriceForBrakePad()
+    /// <summary>
+    /// Calculates the final price for brake pads including markup.
+    /// </summary>
+    /// <returns>The calculated price for the brake pads.</returns>
+    public decimal CalculatePriceForBrakePad()
     {
         decimal price = 120m;
         decimal markup = price * 0.1m;
         return price + markup;
     }
 
-    // Calculates a price estimate for the customer's offer.
-    private decimal BeregnPris(RepairCase c)
+    /// <summary>
+    /// Calculates the total price estimate for a repair offer.
+    /// </summary>
+    /// <param name="c">The repair case used for the estimate.</param>
+    /// <returns>The estimated total price including VAT.</returns>
+    public decimal BeregnPris(RepairCase c)
     {
         decimal partsPrice = CalculatePriceForGearCable() + CalculatePriceForSprocket() + CalculatePriceForBrakePad();
         decimal labor = HOURLY_RATE * 2;
@@ -164,6 +215,10 @@ class repairService
         return subtotal + vat;
     }
 
+    /// <summary>
+    /// Creates a price offer for a repair case and leaves a voicemail to the customer.
+    /// </summary>
+    /// <param name="frameNumber">The frame number of the bike.</param>
     public void CalculateOffer(string frameNumber)
     {
         RepairCase c = FindCase(frameNumber);
@@ -178,6 +233,10 @@ class repairService
         notifier.LeaveVoicemail(cstTlf);
     }
 
+    /// <summary>
+    /// Approves the repair offer for a specific case.
+    /// </summary>
+    /// <param name="frameNumber">The frame number of the bike.</param>
     public void ApproveCase(string frameNumber)
     {
         RepairCase c = FindCase(frameNumber);
@@ -186,14 +245,21 @@ class repairService
         Console.WriteLine($"{c.CustomerInfo.FirstName} accepted the offer.");
     }
 
-    // Sofia repairs the bike.
+    /// <summary>
+    /// Simulates the bike being repaired by Sofia.
+    /// </summary>
+    /// <param name="frameNumber">The frame number of the bike being repaired.</param>
     public void PimpMyBike(string frameNumber) {
         RepairCase c = FindCase(frameNumber);
         Console.WriteLine($"Sofia is repairing the bike, frame number {c.FrameNumber}...");
     }
 
-    // Calculates the final total price for the receipt.
-    private decimal CalculateTotal(RepairCase c)
+    /// <summary>
+    /// Calculates the final total price for the repair receipt.
+    /// </summary>
+    /// <param name="c">The repair case to calculate the total for.</param>
+    /// <returns>The final total including VAT.</returns>
+    public decimal CalculateTotal(RepairCase c)
     {
         decimal partsPrice = CalculatePriceForGearCable() + CalculatePriceForSprocket() + CalculatePriceForBrakePad();
         decimal labor = HOURLY_RATE * 2;
@@ -202,6 +268,10 @@ class repairService
         return subtotal + vat;
     }
 
+    /// <summary>
+    /// Completes the repair, sends a receipt message, and marks the case as finished.
+    /// </summary>
+    /// <param name="frameNumber">The frame number of the completed repair.</param>
     public void finishRepair(string frameNumber)
     {
         RepairCase c = FindCase(frameNumber);
@@ -227,13 +297,20 @@ class repairService
         }
     }
 
+    /// <summary>
+    /// Confirms that a customer has paid for the repair and the bike is ready.
+    /// </summary>
+    /// <param name="frameNumber">The frame number of the paid case.</param>
     public void PayCase(string frameNumber)
     {
         var result = FindCase(frameNumber);
         Console.WriteLine($"{result.CustomerInfo.FirstName} has paid {result.TotalPrice.ToString("F2")} kr. The bike is ready to ride!");
     }
 
-    // Old summary print, replaced by the receipt in finishRepair(). No longer called anywhere.
+    /// <summary>
+    /// Prints a summary of the repair case.
+    /// </summary>
+    /// <param name="frameNumber">The frame number of the case to summarize.</param>
     public void PrintCaseSummary(string frameNumber) {
 	RepairCase c = FindCase(frameNumber);
 	Console.WriteLine("Case summary for " + c.FrameNumber + ": " + c.Problem);
